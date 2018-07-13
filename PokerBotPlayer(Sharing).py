@@ -14,9 +14,9 @@ def getCard(card):
     card_num = 0
     card_num_type = 0
     if card_type == 'H':
-        card_num_type = 1
-    elif card_type == 'S':
         card_num_type = 2
+    elif card_type == 'S':
+        card_num_type = 1
     elif card_type == 'D':
         card_num_type = 3
     else:
@@ -382,7 +382,7 @@ class MontecarloPokerBot(PokerBot):
     def _pick_unused_card(self,card_num, used_card):
 
         used = [self.getCardID(card) for card in used_card]
-        unused = [card_id for card_id in range(1, 53) if card_id not in used]
+        unused = [card_id for card_id in range(2, 54) if card_id not in used]
         choiced = random.sample(unused, card_num)
         return [self.genCardFromId(card_id) for card_id in choiced]
 
