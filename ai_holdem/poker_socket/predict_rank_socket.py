@@ -159,6 +159,12 @@ class PredictRankSocket(PokerSocket):
             print "Game Over"
             self.table = None
             self.players = []
+            # self.ws.send(json.dumps({
+            #     "eventName": "__join",
+            #     "data": {
+            #         "playerName": self.playerName
+            #     }
+            # }))
             return True
 
     def doListen(self):
@@ -186,12 +192,12 @@ class PredictRankSocket(PokerSocket):
                         print e.message
                         # self.ws.close()
                         # self.ws = create_connection(self.connect_url)
-                        # self.ws.send(json.dumps({
-                        #     "eventName": "__join",
-                        #     "data": {
-                        #         "playerName": self.playerName
-                        #     }
-                        # }))
+                        self.ws.send(json.dumps({
+                            "eventName": "__join",
+                            "data": {
+                                "playerName": self.playerName
+                            }
+                        }))
         except Exception, e:
             print e.message
             self.doListen()

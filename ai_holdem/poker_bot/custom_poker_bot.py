@@ -38,7 +38,8 @@ class CustomPokerBot(PotOddsPokerBot):
         print "evaluate_hand:{}".format(my_rank)
         print "pre_player_action:{}".format(state.table_state.last_action)
 
-        if this_round == 'preflop':
+        # if this_round == 'preflop':
+        if this_round == 'Deal':
             table_odds = (1.0 * my_call_bet + total_bet) / (my_call_bet + table_bet)
             print "call table_odds:{}".format(table_odds)
             if my_rank > table_odds:

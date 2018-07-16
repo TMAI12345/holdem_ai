@@ -11,10 +11,10 @@ def play(socket_list):
 
 
 if __name__ == '__main__':
-    playerName = ["test2"]
+    playerName = ["5f4387a3b13e40419c696980d1c75147"]
     # connect_url = "ws://poker-dev.wrs.club:3001/"
-    connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
-    # connect_url = "ws://poker-battle.vtr.trendnet.org:3001"
+    # connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
+    connect_url = "ws://poker-battle.vtr.trendnet.org:3001"
 
     aggresive_threshold = 0.5
     passive_threshold = 0.7
