@@ -171,27 +171,34 @@ class PokerSocket(object):
             self.pokerbot.game_over(isWin,winChips,data)
         elif action == "__new_round":
             self.board = []
+        elif action == "__game_over":
+            return 0;
+        return 1
 
     def doListen(self):
-        try:
-            self.ws = create_connection(self.connect_url)
-            self.ws.send(json.dumps({
-                "eventName": "__join",
-                "data": {
-                    "playerName": self.playerName
-                }
-            }))
-            while 1:
-                result = self.ws.recv()
-                msg = json.loads(result)
-                event_name = msg["eventName"]
-                data = msg["data"]
-                print event_name
-                print data
-                self.takeAction(event_name, data)
-        except Exception, e:
-            print e.message
-            self.doListen()
+        while 1:
+            try:
+                self.ws = create_connection(self.connect_url)
+                self.ws.send(json.dumps({
+                    "eventName": "__join",
+                    "data": {
+                        "playerName": self.playerName
+                    }
+                }))
+                while 1:
+                    result = self.ws.recv()
+                    msg = json.loads(result)
+                    event_name = msg["eventName"]
+                    data = msg["data"]
+                    print event_name
+                    print data
+                    if 0 == self.takeAction(event_name, data):
+                        self.ws.close();
+                        print "close connection"
+                        break;
+            except Exception, e:
+                print e.message
+                self.doListen()
 
 class PotOddsPokerBot(PokerBot):
 
@@ -442,6 +449,20 @@ class FreshPokerBot(PokerBot):
         return action,amount
 
 
+class AllInPokerBot(PokerBot):
+
+    def game_over(self, isWin, winChips, data):
+        pass
+
+    def declareAction(self, holes, boards, round, my_Raise_Bet, my_Call_Bet, Table_Bet, number_players, raise_count, bet_count, my_Chips, total_bet):
+        action = 'allin'
+        amount = 0
+        return action, amount
+
+    def set_data(self, data, pre_player_action):
+        pass
+
+
 class CustomPokerBot(PotOddsPokerBot):
     data = ""
     pre_player_action = ""
@@ -481,12 +502,17 @@ class CustomPokerBot(PotOddsPokerBot):
                 action = 'fold'
                 amount = 0
         elif this_round == 'River':
-            win_rate = self.get_win_prob(holes, boards, 80, number_players)
-            print "win_rate:{}".format(win_rate)
-            if win_rate > 0.9 or my_rank > 0.9:
+            #win_rate = self.get_win_prob(holes, boards, 80, number_players)
+            #print "win_rate:{}".format(win_rate)
+            #if win_rate > 0.9 or my_rank > 0.9:
+            if my_rank > 0.96:
+                action = 'allin'
+                amount = 0
+            elif my_rank > 0.9:
                 action = 'raise'
                 amount = my_raise_bet
-            elif win_rate > 0.5 or my_rank > 0.75:
+            #elif win_rate > 0.5 or my_rank > 0.75:
+            elif my_rank > 0.75:
                 action = 'call'
                 amount = my_call_bet
             elif my_rank > 0.6:
@@ -553,11 +579,13 @@ if __name__ == '__main__':
         #myPokerBot=PotOddsPokerBot(preflop_threshold_Loose,passive_threshold,bet_tolerance)
         #myPokerBot=PotOddsPokerBot(preflop_threshold_Tight,passive_threshold,bet_tolerance)
 
-        playerName = "Sheryl_1112"
-        connect_url = "ws://poker-dev.wrs.club:3001/"
+        playerName = "5f4387a3b13e40419c696980d1c75147"
+        #connect_url = "ws://poker-dev.wrs.club:3001/"
         #connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
+        connect_url = "ws://poker-battle.vtr.trendnet.org:3001"
         simulation_number = 100
         bet_tolerance = 0.1
+        #myPokerBot = AllInPokerBot()
         #myPokerBot=FreshPokerBot()
         #myPokerBot=MontecarloPokerBot(simulation_number)
         #myPokerBot=PotOddsPokerBot(preflop_threshold_Tight,aggresive_threshold,bet_tolerance)
