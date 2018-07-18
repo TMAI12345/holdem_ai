@@ -58,12 +58,17 @@ class CustomPokerBot(PotOddsPokerBot):
                 action = 'fold'
                 amount = 0
         elif this_round == 'River':
-            win_rate = self.get_win_prob(holes, boards, 80, number_players)
-            print "win_rate:{}".format(win_rate)
-            if win_rate > 0.9 or my_rank > 0.9:
+            # win_rate = self.get_win_prob(holes, boards, 80, number_players)
+            # print "win_rate:{}".format(win_rate)
+            # if win_rate > 0.9 or my_rank > 0.9:
+            if my_rank > 0.96:
+                action = 'allin'
+                amount = 0
+            elif my_rank > 0.9:
                 action = 'raise'
                 amount = my_raise_bet
-            elif win_rate > 0.5 or my_rank > 0.75:
+            # elif win_rate > 0.5 or my_rank > 0.75:
+            elif my_rank > 0.75:
                 action = 'call'
                 amount = my_call_bet
             elif my_rank > 0.6:

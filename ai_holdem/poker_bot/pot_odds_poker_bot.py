@@ -33,7 +33,7 @@ class PotOddsPokerBot(PokerBot):
         # score = math.pow(score, self.number_players)
         print "score:{}".format(score)
 
-        if round == 'preflop':
+        if round == 'Deal':
             if score >= self.preflop_tight_loose_threshold:
                 action = 'call'
                 amount = my_Call_Bet

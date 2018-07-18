@@ -159,24 +159,31 @@ class PredictRankSocket(PokerSocket):
             print "Game Over"
             self.table = None
             self.players = []
-            # self.ws.send(json.dumps({
-            #     "eventName": "__join",
-            #     "data": {
-            #         "playerName": self.playerName
-            #     }
-            # }))
+            self.ws.send(json.dumps({
+                "eventName": "__join",
+                "data": {
+                    "playerName": self.playerName
+                }
+            }))
             return True
 
     def doListen(self):
-        self.ws = create_connection(self.connect_url)
-        self.ws.send(json.dumps({
-            "eventName": "__join",
-            "data": {
-                "playerName": self.playerName
-            }
-        }))
-        try:
-            while True:
+        # self.ws = create_connection(self.connect_url)
+        # self.ws.send(json.dumps({
+        #     "eventName": "__join",
+        #     "data": {
+        #         "playerName": self.playerName
+        #     }
+        # }))
+        while True:
+            try:
+                self.ws = create_connection(self.connect_url)
+                self.ws.send(json.dumps({
+                    "eventName": "__join",
+                    "data": {
+                        "playerName": self.playerName
+                    }
+                }))
                 terminal = False
                 while not terminal:
                     try:
@@ -198,7 +205,8 @@ class PredictRankSocket(PokerSocket):
                                 "playerName": self.playerName
                             }
                         }))
-        except Exception, e:
-            print e.message
-            self.doListen()
+                self.ws.close()
+            except Exception, e:
+                print e.message
+                self.doListen()
 

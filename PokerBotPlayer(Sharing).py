@@ -581,7 +581,7 @@ if __name__ == '__main__':
 
         playerName = "5f4387a3b13e40419c696980d1c75147"
         #connect_url = "ws://poker-dev.wrs.club:3001/"
-        #connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
+        # connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
         connect_url = "ws://poker-battle.vtr.trendnet.org:3001"
         simulation_number = 100
         bet_tolerance = 0.1
