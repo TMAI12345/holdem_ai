@@ -85,7 +85,7 @@ class PokerSocket(object):
 
         self.number_players = len(players)
         self.my_Call_Bet = data['self']['minBet']
-        self.my_Raise_Bet = min(big_blind, int(chips / 4))
+        self.my_Raise_Bet = big_blind
         self.hole = []
         for card in (hands):
             self.hole.append(getCard(card))
@@ -487,7 +487,7 @@ class CustomPokerBot(PotOddsPokerBot):
             table_odds = (1.0 * my_call_bet + total_bet) / (my_call_bet + table_bet)
             print "call table_odds:{}".format(table_odds)
             if my_rank > table_odds:
-                if my_rank > 0.5:
+                if my_rank > 0.5 and (my_call_bet / my_raise_bet < 100):
                     action = 'call'
                     amount = my_call_bet
                 #elif my_rank > 0.5 and my_call_bet <= my_chips * 0.7:
@@ -533,7 +533,10 @@ class CustomPokerBot(PotOddsPokerBot):
                 print "table_bet:{}".format(table_bet)
                 table_odds = (1.0 * my_raise_bet + total_bet) / (my_raise_bet + table_bet)
                 print "raise table_odds:{}".format(table_odds)
-                if my_rank > 0.85 and my_rank > table_odds:
+                if my_rank > 0.9:
+                    action = 'raise'
+                    amount = my_raise_bet
+                elif my_rank > 0.85 and my_rank > table_odds:
                     action = 'raise'
                     amount = my_raise_bet
                 else:
