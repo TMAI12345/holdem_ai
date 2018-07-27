@@ -2,6 +2,7 @@
 import poker_socket
 import threading
 from poker_bot.custom_poker_bot import CustomPokerBot
+from poker_bot.gradient_boosting_poker_bot import GradientBoostingPokerBot
 
 def play(socket_list):
     for s in socket_list:
@@ -12,6 +13,7 @@ def play(socket_list):
 
 if __name__ == '__main__':
     playerName = ["test321"]
+    # playerName = ["8fcf3c0d65fc407d9abb548973c634c5"]
     # connect_url = "ws://poker-dev.wrs.club:3001/"
     connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
     # connect_url = "ws://poker-battle.vtr.trendnet.org:3001"
@@ -33,10 +35,11 @@ if __name__ == '__main__':
     # myPokerBot = poker_bot.FreshPokerBot()
     # myPokerBot = poker_bot.MontecarloPokerBot(simulation_number)
 
-    myPokerBot = CustomPokerBot(preflop_threshold_Tight, aggresive_threshold, bet_tolerance)
+    # myPokerBot = CustomPokerBot(preflop_threshold_Tight, aggresive_threshold, bet_tolerance)
+    myPokerBot = GradientBoostingPokerBot()
     socket_list = []
     for i in range(len(playerName)):
-        # socket = poker_socket.TMSocket(playerName[i], connect_url, myPokerBot)
-        socket = poker_socket.PredictRankSocket(playerName[i], connect_url, myPokerBot)
+        socket = poker_socket.TMSocket(playerName[i], connect_url, myPokerBot)
+        # socket = poker_socket.PredictRankSocket(playerName[i], connect_url, myPokerBot)
         socket_list.append(socket)
     play(socket_list)

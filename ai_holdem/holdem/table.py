@@ -65,8 +65,8 @@ class Table():
             self._total_bet = table_data['totalBet']
         self._small_blind = table_data['smallBlind']['playerName']
         self._big_blind = table_data['bigBlind']['playerName']
-        self._small_blind_amount = table_data['smallBlind']['amount']
-        self._big_blind_amount = table_data['bigBlind']['amount']
+        self._small_blind_amount = 1.0 * table_data['smallBlind']['amount']
+        self._big_blind_amount = 1.0 * table_data['bigBlind']['amount']
 
     def get_table_state(self):
         table_state = TABLE_STATE(
@@ -80,8 +80,8 @@ class Table():
             int(self._total_bet),
             str(self._small_blind),
             str(self._big_blind),
-            int(self._small_blind_amount),
-            int(self._big_blind_amount),
+            float(self._small_blind_amount),
+            float(self._big_blind_amount),
             str(self.last_player),
             str(self.last_action),
             int(self.last_amount)

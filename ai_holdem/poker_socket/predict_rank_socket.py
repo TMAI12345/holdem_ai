@@ -153,7 +153,7 @@ class PredictRankSocket(PokerSocket):
                             rank = evaluator.evaluate_hand(hand, board)
                             # print("rank: {}".format(rank))
                             self.predict_rank_data[i] = self.predict_rank_data[i]._replace(rank=rank)
-            utils.state_to_csv(self.predict_rank_data)
+            utils.state_to_csv(utils.PREDICT_RANK_DATA, "log/", self.predict_rank_data)
             return False
         elif action == "__game_over":
             print "Game Over"

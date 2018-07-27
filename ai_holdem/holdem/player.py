@@ -1,5 +1,5 @@
 import poker_bot
-from utils.utils import PLAYER_STATE, ACTION_TO_NUM, getCard
+from utils.utils import PLAYER_STATE, ACTION_TO_NUM, getCard, ROUND_NAME_TO_NUM
 
 
 class Player(object):
@@ -17,6 +17,9 @@ class Player(object):
         self._action = 0
         self._amount = 0
         self.model = model
+        self._phase_raise = [0, 0, 0, 0]
+        self._last_action = -1
+        self._last_amount = 0
         # self._rank = 0
         # self._winMoney = 0
 
@@ -43,9 +46,11 @@ class Player(object):
     #     self._isOnline = player_data['isOnline']
 
 
-    def new_round(self, player_data):
-        self.update_by_state(player_data)
+    def new_round(self):
         # self._begin_round_chips = self._chips
+        self._phase_raise = [0, 0, 0, 0]
+        self._action = -1
+        self._amount = 0
         return False
 
     def update_by_state(self, player):
@@ -68,8 +73,12 @@ class Player(object):
         action, amount = self.model.declareAction(state, minBet, seat_num)
         return action, amount
 
-    def update_action(self, actionData):
+    def update_action(self, actionData, phase):
+        self._last_action = self._action
+        self._last_amount = self._amount
         self._action = ACTION_TO_NUM[actionData['action']]
+        if self._action == 2:
+            self._phase_raise[ROUND_NAME_TO_NUM[phase]] += 1
         amount = 0
         if 'amount' in actionData:
             amount = actionData['amount']
@@ -89,5 +98,8 @@ class Player(object):
             int(self._bet),
             int(self._action),
             int(self._amount),
+            self._phase_raise,
+            int(self._last_action),
+            int(self._last_amount),
         )
         return player_features

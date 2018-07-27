@@ -6,20 +6,25 @@ import csv
 
 TABLE_STATE = namedtuple(
     'table_state', ['table_number', 'round', 'number_players', 'board', 'round_count',
-                    'raise_count', 'bet_count', 'total_bet', 'small_blind',
+                    'raise_count', 'bet_count', 'total_pot', 'small_blind',
                     'big_blind', 'small_blind_amount', 'big_blind_amount',
                     'last_player', 'last_action', 'last_amount'])
 
 PLAYER_STATE = namedtuple(
     'player_state', ['player_name', 'chips', 'folded', 'allIn', 'isSurvive',
-                     'cards', 'reloadCount', 'roundBet', 'bet', 'action',
-                     'amount'])
+                     'hand', 'reload_count', 'round_bet', 'bet', 'action',
+                     'amount', 'phase_raise', 'last_action', 'last_amount'])
 
 STATE = namedtuple('state', ['table_state', 'player_state'])
 
 PREDICT_RANK_DATA = namedtuple(
-    'rank_data', ['player_name', 'round', 'number_players', 'board', 'total_bet', 'action',
-                  'amount', 'chips', 'cards', 'rank'])
+    'rank_data', ['player_name', 'round', 'number_players', 'board', 'total_pot', 'action',
+                  'amount', 'chips', 'hand', 'rank'])
+
+LOG_DATA = namedtuple(
+    'log_data', ['player_name', 'table_number', 'round_count', 'phase', 'number_players', 'board', 'total_pot', 'action',
+                 'amount', 'chips', 'hand', 'rank', 'big_blind', 'round_bet', 'phase_bet', 'phase_raise', 'last_phase_raise',
+                 'last_action', 'last_amount', 'win_money', 'isSB', 'isBB'])
 
 
 CHAR_SUIT_TO_INT = {
@@ -150,11 +155,11 @@ def get_rank_data(state, player_index):
         int(ROUND_NAME_TO_NUM[state.table_state.round]),
         int(state.table_state.number_players),
         state.table_state.board,
-        float(state.table_state.total_bet / state.table_state.big_blind_amount),
+        float(state.table_state.total_pot / state.table_state.big_blind_amount),
         int(state.player_state[player_index].action),
         float(state.player_state[player_index].amount / state.table_state.big_blind_amount),
         float(state.player_state[player_index].chips / state.table_state.big_blind_amount),
-        state.player_state[player_index].cards,
+        state.player_state[player_index].hand,
         0.0  # rank
     )
     return predict_rank_data
@@ -175,33 +180,34 @@ def get_index_from_player_list(md5_name, players):
             return i
 
 
-def state_to_csv(predict_rank_data_list):
+def state_to_csv(data_type, log_path, data_list):
     # predict_rank_data_list = sorted(predict_rank_data_list, key=attrgetter('player_name')) # base on player_name
-    rank_dict = player_name_dict(predict_rank_data_list)  # namedtuple to dictionary
-    for key, value in rank_dict.iteritems():
-        with open("log/{}.csv".format(key), 'a+b') as csvfile:
+    data_dict = player_name_dict(data_list)  # namedtuple to dictionary
+    for key, value in data_dict.iteritems():
+        # with open(log_path + "{}.csv".format(key), 'a+b') as csvfile:
+        with open(log_path + "log.csv", 'a+b') as csvfile:
             writer = csv.writer(csvfile)
             #  create header
             csv_dict = [row for row in csv.DictReader(csvfile)]
             if len(csv_dict) == 0:
-                writer.writerow(PREDICT_RANK_DATA._fields)
+                writer.writerow(data_type._fields)
 
             # writer.writerows(data for data in predict_rank_data_list)
-            for rank_data in value:
+            for row in value:
                 data = []
-                for name in rank_data._fields:
+                for name in data_type._fields:
                     #  change the format of cards and board
-                    if name == "cards" or name == "board":
+                    if name == "hand" or name == "board":
                         str = []
-                        cards = getattr(rank_data, name)
+                        cards = getattr(row, name)
                         for card in cards:
                             str.append(card_to_str(card))
                         data.append(str)
                     else:
-                        data.append(getattr(rank_data, name))
-                print(data)
+                        data.append(getattr(row, name))
+                # print(data)
                 writer.writerow(data)
-    print("Record log successfully.")
+    # print("Record log successfully.")
 
 
 def card_to_str(card):
@@ -216,7 +222,7 @@ def player_name_dict(predict_rank_data_list):  # {player_name: state}
             rank_dict[player_name].append(rank_data)
         else:
             rank_dict[player_name] = [rank_data]
-    print rank_dict
+    # print rank_dict
     return rank_dict
 
 def str_list_to_card(cards, board):
@@ -227,3 +233,50 @@ def str_list_to_card(cards, board):
     for card in board:
         boards.append(getCard(card))
     return hands, boards
+
+
+def get_log_data(state, player_index):
+    # 'log_data', ['player_name', 'round', 'number_players', 'round_count', 'board', 'total_pot', 'action',
+    #              'amount', 'chips', 'hand', 'rank', 'big_blind', 'round_bet', 'phase_bet', 'win_money',
+    #              'isSB', 'isBB']
+    evaluator = HandEvaluator()
+    rank = evaluator.evaluate_hand(state.player_state[player_index].hand, state.table_state.board)
+    alive_players = [player for player in state.player_state if player.isSurvive]
+
+    phase = ROUND_NAME_TO_NUM[state.table_state.round]
+    phase_raise = state.player_state[player_index].phase_raise[phase]
+    phase_raise = phase_raise - 1 if state.player_state[player_index].action == 2 else phase_raise
+    last_phase_raise = -1 if phase == 0 else state.player_state[player_index].phase_raise[phase - 1]
+    # isBTN
+    isSB = 1 if state.player_state[player_index].player_name == state.table_state.small_blind else 0
+    isBB = 1 if state.player_state[player_index].player_name == state.table_state.big_blind else 0
+    log_data = LOG_DATA(
+        state.player_state[player_index].player_name,
+        int(state.table_state.table_number),
+        int(state.table_state.round_count),
+        int(ROUND_NAME_TO_NUM[state.table_state.round]),
+        int(state.table_state.number_players),
+        state.table_state.board,
+        float((state.table_state.total_pot - state.player_state[player_index].amount)
+              / state.table_state.big_blind_amount),
+        int(state.player_state[player_index].action),
+        float(state.player_state[player_index].amount / state.table_state.big_blind_amount),
+        float((state.player_state[player_index].chips + state.player_state[player_index].amount)
+              / state.table_state.big_blind_amount),
+        state.player_state[player_index].hand,
+        float(rank),
+        int(state.table_state.big_blind_amount),
+        float((state.player_state[player_index].round_bet - state.player_state[player_index].amount)
+              / state.table_state.big_blind_amount),
+        float((state.player_state[player_index].bet - state.player_state[player_index].amount)
+              / state.table_state.big_blind_amount),
+        int(phase_raise),
+        int(last_phase_raise),
+        int(state.player_state[player_index].last_action),
+        float(state.player_state[player_index].last_amount / state.table_state.big_blind_amount),
+        0.0,  # win_money
+        # isBTN,
+        int(isSB),
+        int(isBB)
+    )
+    return log_data

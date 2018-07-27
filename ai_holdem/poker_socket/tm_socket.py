@@ -9,6 +9,7 @@ from holdem import Table
 from holdem import Player
 from poker_socket import PokerSocket
 from utils import utils
+from pokereval.hand_evaluator import HandEvaluator
 
 class TMSocket(PokerSocket):
     ws = ""
@@ -42,7 +43,7 @@ class TMSocket(PokerSocket):
         #     board.append(utils.getCard(card))
         # state.player_state[seat_num] = state.player_state[seat_num]._replace(cards=hand)
         # state.table_state = state.table_state._replace(board=board)
-        print("state: {}".format(state))
+        # print("state: {}".format(state))
         action, amount = self.players[player_index].do_action(state, minBet, player_index)
         return action, amount
 
@@ -70,18 +71,19 @@ class TMSocket(PokerSocket):
                     else:
                         self.players.append(Player(p['playerName'], p['chips']))
             for i, p in enumerate(self.players):
+                p.new_round()
                 p.update_by_state(players_data[i])
             return False
         elif action == "__show_action":
             player_index = utils.get_index_from_player_list(data['action']['playerName'], self.players)
-            self.players[player_index].update_action(data['action'])
+            self.players[player_index].update_action(data['action'], data['table']['roundName'])
             #  update table and player
             self.table.update_table_status(data)
             for i, p in enumerate(self.players):
                 p.update_by_state(data['players'][i])
             return False
         elif action == "__bet":
-            print("Bet")
+            # print("Bet")
             action, amount = self.getAction(data)
             # print "action: {}".format(action)
             # print "action amount: {}".format(amount)
@@ -94,7 +96,7 @@ class TMSocket(PokerSocket):
                 }}))
             return False
         elif action == "__action":
-            print("Action")
+            # print("Action")
             action, amount = self.getAction(data)
             # print "action: {}".format(action)
             # print "action amount: {}".format(amount)
@@ -111,9 +113,11 @@ class TMSocket(PokerSocket):
             self.table.update_table_status(data)
             for i, p in enumerate(self.players):
                 p.update_by_state(data['players'][i])
+            player_index = utils.get_index_from_player_list(self.md5_name, self.players)
+            print "hands: {}, board: {}".format(data['table']['board'], data['players'][player_index]['hand'])
             return False
         elif action == "__start_reload":
-            print "Reload"
+            # print "Reload"
             # self.ws.send(json.dumps({
             #     "eventName": "__reload",
             # }))
@@ -123,6 +127,15 @@ class TMSocket(PokerSocket):
             return False
         elif action == "__round_end":
             print "Round End"
+            state = utils.get_current_state(self.table, self.players)
+            player_index = utils.get_index_from_player_list(self.md5_name, self.players)
+            player_data = data['players']
+            win_money = player_data[player_index]['winMoney']
+            evaluator = HandEvaluator()
+            rank = evaluator.evaluate_hand(state.player_state[player_index].hand, state.table_state.board)
+            chips = player_data[player_index]['chips']
+            print "hands: {}, board: {}, rank: {}".format(state.player_state[player_index].hand, state.table_state.board, rank)
+            print "win money: {}, remain chips: {}".format(win_money, chips)
 
             return False
         elif action == "__game_over":
@@ -148,8 +161,8 @@ class TMSocket(PokerSocket):
                         msg = json.loads(result)
                         event_name = msg["eventName"]
                         data = msg["data"]
-                        print event_name
-                        print data
+                        # print event_name
+                        # print data
                         terminal = self.takeAction(event_name, data)
                     # except WebSocketConnectionClosedException:
                     except Exception as e:
