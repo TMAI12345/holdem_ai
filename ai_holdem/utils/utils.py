@@ -207,7 +207,7 @@ def state_to_csv(data_type, log_path, data_list):
                         data.append(getattr(row, name))
                 # print(data)
                 writer.writerow(data)
-    # print("Record log successfully.")
+    print("Record log successfully.")
 
 
 def card_to_str(card):

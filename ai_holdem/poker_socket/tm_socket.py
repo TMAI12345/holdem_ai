@@ -114,7 +114,7 @@ class TMSocket(PokerSocket):
             for i, p in enumerate(self.players):
                 p.update_by_state(data['players'][i])
             player_index = utils.get_index_from_player_list(self.md5_name, self.players)
-            print "hands: {}, board: {}".format(data['table']['board'], data['players'][player_index]['hand'])
+            print "hands: {}, board: {}".format(data['players'][player_index]['cards'], data['table']['board'])
             return False
         elif action == "__start_reload":
             # print "Reload"
@@ -145,15 +145,15 @@ class TMSocket(PokerSocket):
             return True
 
     def doListen(self):
-        self.ws = create_connection(self.connect_url)
-        self.ws.send(json.dumps({
-            "eventName": "__join",
-            "data": {
-                "playerName": self.playerName
-            }
-        }))
         try:
             while True:
+                self.ws = create_connection(self.connect_url)
+                self.ws.send(json.dumps({
+                    "eventName": "__join",
+                    "data": {
+                        "playerName": self.playerName
+                    }
+                }))
                 terminal = False
                 while not terminal:
                     try:
@@ -167,14 +167,8 @@ class TMSocket(PokerSocket):
                     # except WebSocketConnectionClosedException:
                     except Exception as e:
                         print e.message
-                        # self.ws.close()
-                        # self.ws = create_connection(self.connect_url)
-                        # self.ws.send(json.dumps({
-                        #     "eventName": "__join",
-                        #     "data": {
-                        #         "playerName": self.playerName
-                        #     }
-                        # }))
+                        terminal = True
+                self.ws.close()
         except Exception, e:
             print e.message
             self.doListen()

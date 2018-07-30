@@ -84,8 +84,9 @@ def get_table_dict(data):
     return table_dict
 
 if __name__ == '__main__':
-    # file_list = ["0717", "0718", "0719", "0720", "0723", "0724", "0725", "0726"]
-    file_list = ["0726"]
+    # file_list = ["0717", "0718", "0719", "0720", "0723", "0724", "0725", "0726", "0727"]
+    # file_list = ["0727"]
+    file_list = ["0719", "0720", "0723", "0724", "0725", "0726", "0727"]
     for file in file_list:
         file_path = "C:\Users\jeremy_pan\Desktop\log\\{}\common_log\\".format(file)
         extract_log(file_path, file)

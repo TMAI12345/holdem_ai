@@ -12,7 +12,7 @@ def play(socket_list):
 
 
 if __name__ == '__main__':
-    playerName = ["test321"]
+    playerName = ["77"]
     # playerName = ["8fcf3c0d65fc407d9abb548973c634c5"]
     # connect_url = "ws://poker-dev.wrs.club:3001/"
     connect_url = "ws://poker-training.vtr.trendnet.org:3001/"
